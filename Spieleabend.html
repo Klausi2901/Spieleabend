@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="2299">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #000000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #000000; min-height: 15.0px}
+</style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="de"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Spieleabend Umfrage&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body { font-family: Arial, sans-serif; padding: 20px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>h1 { font-size: 24px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.date-option { margin: 5px 0; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>#results { margin-top: 30px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>table { border-collapse: collapse; width: 100%; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;h1&gt;Wann hast du Zeit für den Spieleabend?&lt;/h1&gt;</p>
+<p class="p1">&lt;p&gt;Trage deinen Namen ein und wähle die Tage aus, an denen du Zeit hast:&lt;/p&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;form id="voteForm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;input type="text" id="name" placeholder="Dein Name" required&gt;&lt;br&gt;&lt;br&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div id="dates"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;br&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button type="submit"&gt;Absenden&lt;/button&gt;</p>
+<p class="p1">&lt;/form&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div id="results"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;h2&gt;Ergebnisse&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;table id="resultsTable"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;tr&gt;&lt;th&gt;Datum&lt;/th&gt;&lt;th&gt;Teilnehmer&lt;/th&gt;&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/table&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">// Funktionen zum Generieren der Wochentage</p>
+<p class="p1">function getWeekdays(startDate, endDate) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const days = [];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let date = new Date(startDate);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>while (date &lt;= endDate) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (date.getDay() &gt;= 1 &amp;&amp; date.getDay() &lt;= 5) { // Montag-Freitag</p>
+<p class="p1"><span class="Apple-converted-space">      </span>days.push(new Date(date));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>date.setDate(date.getDate() + 1);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return days;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// Setup der Datumsfelder</p>
+<p class="p1">const start = new Date();</p>
+<p class="p1">start.setDate(start.getDate() + (8 - start.getDay()) % 7); // nächsten Montag</p>
+<p class="p1">const end = new Date(start);</p>
+<p class="p1">end.setDate(end.getDate() + 30);</p>
+<p class="p1">const weekdays = getWeekdays(start, end);</p>
+<p class="p1">const datesDiv = document.getElementById('dates');</p>
+<p class="p1">const resultsTable = document.getElementById('resultsTable').querySelector('tbody');</p>
+<p class="p2"><br></p>
+<p class="p1">weekdays.forEach(day =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const formatted = day.toISOString().split('T')[0];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const label = document.createElement('label');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>label.className = 'date-option';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>label.innerHTML = `&lt;input type="checkbox" name="date" value="${formatted}"&gt; ${formatted}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>datesDiv.appendChild(label);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>datesDiv.appendChild(document.createElement('br'));</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">// Ergebnisdatenbank</p>
+<p class="p1">const votes = {};</p>
+<p class="p1">weekdays.forEach(day =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const formatted = day.toISOString().split('T')[0];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>votes[formatted] = [];</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">function updateResults() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>resultsTable.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>Object.keys(votes).forEach(date =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const participants = votes[date].join(', ');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const row = `&lt;tr&gt;&lt;td&gt;${date}&lt;/td&gt;&lt;td&gt;${participants}&lt;/td&gt;&lt;/tr&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>resultsTable.innerHTML += row;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// Formular absenden</p>
+<p class="p1">const form = document.getElementById('voteForm');</p>
+<p class="p1">form.addEventListener('submit', function(e) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const name = document.getElementById('name').value.trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (!name) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const checkedDates = Array.from(document.querySelectorAll('input[name="date"]:checked')).map(cb =&gt; cb.value);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>checkedDates.forEach(date =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!votes[date].includes(name)) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>votes[date].push(name);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>form.reset();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>updateResults();</p>
+<p class="p1">});</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
