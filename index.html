@@ -84,6 +84,10 @@
     th {
       background-color: #f1f1f1;
     }
+    tr.best-day {
+      background-color: #d4edda;
+      font-weight: bold;
+    }
     tr:hover {background-color: #f9f9f9;}
 
     @media (max-width: 600px) {
@@ -109,7 +113,7 @@
   <h2 style="text-align:center; margin-bottom:20px;">Ergebnisse (aktuell)</h2>
   <table id="resultsTable">
     <thead>
-      <tr><th>Datum</th><th>Teilnehmer</th></tr>
+      <tr><th>Datum</th><th>Teilnehmer</th><th>Anzahl Teilnehmer</th></tr>
     </thead>
     <tbody>
     </tbody>
@@ -158,10 +162,26 @@ weekdays.forEach(day => {
 
 function updateResults() {
   resultsTable.innerHTML = '';
+  let maxParticipants = 0;
+  let bestDates = [];
+
   Object.keys(votes).forEach(date => {
     const participants = votes[date].join(', ');
+    const count = votes[date].length;
+    if (count > maxParticipants) {
+      maxParticipants = count;
+      bestDates = [date];
+    } else if (count === maxParticipants && count > 0) {
+      bestDates.push(date);
+    }
+  });
+
+  Object.keys(votes).forEach(date => {
+    const participants = votes[date].join(', ');
+    const count = votes[date].length;
     const displayDate = formatDateWithDay(new Date(date));
-    const row = `<tr><td>${displayDate}</td><td>${participants}</td></tr>`;
+    const isBest = bestDates.includes(date);
+    const row = `<tr class="${isBest ? 'best-day' : ''}"><td>${displayDate}</td><td>${participants}</td><td>${count}</td></tr>`;
     resultsTable.innerHTML += row;
   });
 }
@@ -177,7 +197,6 @@ form.addEventListener('submit', function(e) {
 
   const checkedDates = Array.from(document.querySelectorAll('input[name="date"]:checked')).map(cb => cb.value);
 
-  // UI: Button deaktivieren und Text ändern
   submitButton.disabled = true;
   submitButton.textContent = 'Senden läuft...';
 
@@ -203,7 +222,7 @@ form.addEventListener('submit', function(e) {
     launchConfetti();
     submitButton.disabled = false;
     submitButton.textContent = 'Absenden';
-    fetchSheetData(); // neu laden!
+    fetchSheetData();
   });
 });
 
@@ -229,7 +248,6 @@ function launchConfetti() {
   }());
 }
 
-// === Live Sheet Daten holen ===
 const sheetID = '1nDQSvhAuIG7Ln1ub5M4kF72O6s66gjh9e-w5oJ8a_PI';
 const sheetName = 'Tabellenblatt1';
 
