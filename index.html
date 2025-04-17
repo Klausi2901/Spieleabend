@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spieleabend Umfrage</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { font-size: 24px; }
+    .date-option { margin: 5px 0; }
+    #results { margin-top: 30px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<h1>Wann hast du Zeit für den Spieleabend?</h1>
+<p>Trage deinen Namen ein und wähle die Tage aus, an denen du Zeit hast:</p>
+
+<form id="voteForm">
+  <input type="text" id="name" placeholder="Dein Name" required><br><br>
+  <div id="dates"></div>
+  <br>
+  <button type="submit">Absenden</button>
+</form>
+
+<div id="results">
+  <h2>Ergebnisse</h2>
+  <table id="resultsTable">
+    <thead>
+      <tr><th>Datum</th><th>Teilnehmer</th></tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Funktionen zum Generieren der Wochentage
+function getWeekdays(startDate, endDate) {
+  const days = [];
+  let date = new Date(startDate);
+  while (date <= endDate) {
+    if (date.getDay() >= 1 && date.getDay() <= 5) { // Montag-Freitag
+      days.push(new Date(date));
+    }
+    date.setDate(date.getDate() + 1);
+  }
+  return days;
+}
+
+// Setup der Datumsfelder
+const start = new Date();
+start.setDate(start.getDate() + (8 - start.getDay()) % 7); // nächsten Montag
+const end = new Date(start);
+end.setDate(end.getDate() + 30);
+const weekdays = getWeekdays(start, end);
+const datesDiv = document.getElementById('dates');
+const resultsTable = document.getElementById('resultsTable').querySelector('tbody');
+
+weekdays.forEach(day => {
+  const formatted = day.toISOString().split('T')[0];
+  const label = document.createElement('label');
+  label.className = 'date-option';
+  label.innerHTML = `<input type="checkbox" name="date" value="${formatted}"> ${formatted}`;
+  datesDiv.appendChild(label);
+  datesDiv.appendChild(document.createElement('br'));
+});
+
+// Ergebnisdatenbank
+const votes = {};
+weekdays.forEach(day => {
+  const formatted = day.toISOString().split('T')[0];
+  votes[formatted] = [];
+});
+
+function updateResults() {
+  resultsTable.innerHTML = '';
+  Object.keys(votes).forEach(date => {
+    const participants = votes[date].join(', ');
+    const row = `<tr><td>${date}</td><td>${participants}</td></tr>`;
+    resultsTable.innerHTML += row;
+  });
+}
+
+// Formular absenden
+const form = document.getElementById('voteForm');
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  if (!name) return;
+
+  const checkedDates = Array.from(document.querySelectorAll('input[name="date"]:checked')).map(cb => cb.value);
+
+  checkedDates.forEach(date => {
+    if (!votes[date].includes(name)) {
+      votes[date].push(name);
+    }
+  });
+
+  form.reset();
+  updateResults();
+});
+</script>
+
+</body>
+</html>
