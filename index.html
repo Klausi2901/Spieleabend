@@ -4,13 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spieleabend Umfrage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { font-size: 24px; }
-    .date-option { margin: 5px 0; }
-    #results { margin-top: 30px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    p {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 0 auto 40px auto;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .date-option {
+      display: block;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #success-message {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+      margin-top: 10px;
+      display: none;
+    }
+    #results {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f1f1f1;
+    }
+    tr:hover {background-color: #f9f9f9;}
+
+    @media (max-width: 600px) {
+      form, #results {
+        width: 90%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -19,14 +97,14 @@
 <p>Trage deinen Namen ein und wähle die Tage aus, an denen du Zeit hast:</p>
 
 <form id="voteForm">
-  <input type="text" id="name" placeholder="Dein Name" required><br><br>
+  <input type="text" id="name" placeholder="Dein Name" required>
   <div id="dates"></div>
-  <br>
   <button type="submit">Absenden</button>
+  <div id="success-message">✅ Deine Antwort wurde gespeichert!</div>
 </form>
 
 <div id="results">
-  <h2>Ergebnisse</h2>
+  <h2 style="text-align:center; margin-bottom:20px;">Ergebnisse</h2>
   <table id="resultsTable">
     <thead>
       <tr><th>Datum</th><th>Teilnehmer</th></tr>
@@ -37,12 +115,11 @@
 </div>
 
 <script>
-// Funktionen zum Generieren der Wochentage
 function getWeekdays(startDate, endDate) {
   const days = [];
   let date = new Date(startDate);
   while (date <= endDate) {
-    if (date.getDay() >= 1 && date.getDay() <= 5) { // Montag-Freitag
+    if (date.getDay() >= 1 && date.getDay() <= 5) { 
       days.push(new Date(date));
     }
     date.setDate(date.getDate() + 1);
@@ -50,9 +127,13 @@ function getWeekdays(startDate, endDate) {
   return days;
 }
 
-// Setup der Datumsfelder
+function formatDateWithDay(date) {
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('de-DE', options);
+}
+
 const start = new Date();
-start.setDate(start.getDate() + (8 - start.getDay()) % 7); // nächsten Montag
+start.setDate(start.getDate() + (8 - start.getDay()) % 7);
 const end = new Date(start);
 end.setDate(end.getDate() + 30);
 const weekdays = getWeekdays(start, end);
@@ -63,12 +144,10 @@ weekdays.forEach(day => {
   const formatted = day.toISOString().split('T')[0];
   const label = document.createElement('label');
   label.className = 'date-option';
-  label.innerHTML = `<input type="checkbox" name="date" value="${formatted}"> ${formatted}`;
+  label.innerHTML = `<input type="checkbox" name="date" value="${formatted}"> ${formatDateWithDay(day)}`;
   datesDiv.appendChild(label);
-  datesDiv.appendChild(document.createElement('br'));
 });
 
-// Ergebnisdatenbank
 const votes = {};
 weekdays.forEach(day => {
   const formatted = day.toISOString().split('T')[0];
@@ -79,12 +158,12 @@ function updateResults() {
   resultsTable.innerHTML = '';
   Object.keys(votes).forEach(date => {
     const participants = votes[date].join(', ');
-    const row = `<tr><td>${date}</td><td>${participants}</td></tr>`;
+    const displayDate = formatDateWithDay(new Date(date));
+    const row = `<tr><td>${displayDate}</td><td>${participants}</td></tr>`;
     resultsTable.innerHTML += row;
   });
 }
 
-// Formular absenden
 const form = document.getElementById('voteForm');
 form.addEventListener('submit', function(e) {
   e.preventDefault();
@@ -100,9 +179,13 @@ form.addEventListener('submit', function(e) {
   });
 
   form.reset();
+  document.getElementById('success-message').style.display = 'block';
+  setTimeout(() => { document.getElementById('success-message').style.display = 'none'; }, 2000);
+
   updateResults();
 });
 </script>
 
 </body>
 </html>
+
