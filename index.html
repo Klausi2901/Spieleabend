@@ -106,7 +106,7 @@
 </form>
 
 <div id="results">
-  <h2 style="text-align:center; margin-bottom:20px;">Ergebnisse (lokale Vorschau)</h2>
+  <h2 style="text-align:center; margin-bottom:20px;">Ergebnisse (aktuell)</h2>
   <table id="resultsTable">
     <thead>
       <tr><th>Datum</th><th>Teilnehmer</th></tr>
@@ -177,20 +177,10 @@ form.addEventListener('submit', function(e) {
 
   const checkedDates = Array.from(document.querySelectorAll('input[name="date"]:checked')).map(cb => cb.value);
 
-  // Update lokale Ansicht
-  checkedDates.forEach(date => {
-    if (!votes[date].includes(name)) {
-      votes[date].push(name);
-    }
-  });
-
-  updateResults();
-
   // UI: Button deaktivieren und Text ändern
   submitButton.disabled = true;
   submitButton.textContent = 'Senden läuft...';
 
-  // Daten an Google Sheets schicken
   fetch('https://script.google.com/a/macros/planinja.de/s/AKfycbw4nQopA9lQjOyp0H6nZBnnvy8ePe5_St28joqHr2AlVlYiMVAh9w4En4bV5opLJMBt_g/exec', {
     method: 'POST',
     mode: 'no-cors',
@@ -210,20 +200,16 @@ form.addEventListener('submit', function(e) {
       document.getElementById('success-message').innerHTML = '✅ Deine Antwort wurde gespeichert!';
     }, 3000);
 
-    // Konfetti-Effekt auslösen
     launchConfetti();
-
-    // Button wieder aktivieren
     submitButton.disabled = false;
     submitButton.textContent = 'Absenden';
+    fetchSheetData(); // neu laden!
   });
 });
 
-// Konfetti Effekt Funktion
 function launchConfetti() {
   const duration = 2 * 1000;
   const end = Date.now() + duration;
-
   (function frame() {
     confetti({
       particleCount: 3,
@@ -237,15 +223,42 @@ function launchConfetti() {
       spread: 55,
       origin: { x: 1 }
     });
-
     if (Date.now() < end) {
       requestAnimationFrame(frame);
     }
   }());
 }
+
+// === Live Sheet Daten holen ===
+const sheetID = '1nDQSvhAuIG7Ln1ub5M4kF72O6s66gjh9e-w5oJ8a_PI';
+const sheetName = 'Tabellenblatt1';
+
+function fetchSheetData() {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows;
+      Object.keys(votes).forEach(date => votes[date] = []);
+      rows.forEach(row => {
+        const date = row.c[0]?.v;
+        const name = row.c[1]?.v;
+        if (date && name && votes[date]) {
+          if (!votes[date].includes(name)) {
+            votes[date].push(name);
+          }
+        }
+      });
+      updateResults();
+    });
+}
+
+fetchSheetData();
+setInterval(fetchSheetData, 30000);
 </script>
 
-<!-- Konfetti-Bibliothek einbinden -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 
 </body>
