@@ -11,6 +11,7 @@
       background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
       padding: 20px;
       color: #333;
+      overflow-x: hidden;
     }
     h1 {
       font-size: 28px;
@@ -50,10 +51,11 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s, transform 0.3s;
     }
     button:hover {
       background-color: #45a049;
+      transform: scale(1.05);
     }
     #success-message {
       text-align: center;
@@ -104,7 +106,7 @@
 </form>
 
 <div id="results">
-  <h2 style="text-align:center; margin-bottom:20px;">Ergebnisse</h2>
+  <h2 style="text-align:center; margin-bottom:20px;">Ergebnisse (lokale Vorschau)</h2>
   <table id="resultsTable">
     <thead>
       <tr><th>Datum</th><th>Teilnehmer</th></tr>
@@ -165,27 +167,86 @@ function updateResults() {
 }
 
 const form = document.getElementById('voteForm');
+const submitButton = form.querySelector('button');
+
 form.addEventListener('submit', function(e) {
   e.preventDefault();
+
   const name = document.getElementById('name').value.trim();
   if (!name) return;
 
   const checkedDates = Array.from(document.querySelectorAll('input[name="date"]:checked')).map(cb => cb.value);
 
+  // Update lokale Ansicht
   checkedDates.forEach(date => {
     if (!votes[date].includes(name)) {
       votes[date].push(name);
     }
   });
 
-  form.reset();
-  document.getElementById('success-message').style.display = 'block';
-  setTimeout(() => { document.getElementById('success-message').style.display = 'none'; }, 2000);
-
   updateResults();
+
+  // UI: Button deaktivieren und Text ändern
+  submitButton.disabled = true;
+  submitButton.textContent = 'Senden läuft...';
+
+  // Daten an Google Sheets schicken
+  fetch('https://script.google.com/a/macros/planinja.de/s/AKfycbw4nQopA9lQjOyp0H6nZBnnvy8ePe5_St28joqHr2AlVlYiMVAh9w4En4bV5opLJMBt_g/exec', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name,
+      dates: checkedDates
+    })
+  }).then(() => {
+    form.reset();
+    document.getElementById('success-message').innerHTML = '✅🎉 Deine Antwort wurde gespeichert!';
+    document.getElementById('success-message').style.display = 'block';
+    setTimeout(() => { 
+      document.getElementById('success-message').style.display = 'none';
+      document.getElementById('success-message').innerHTML = '✅ Deine Antwort wurde gespeichert!';
+    }, 3000);
+
+    // Konfetti-Effekt auslösen
+    launchConfetti();
+
+    // Button wieder aktivieren
+    submitButton.disabled = false;
+    submitButton.textContent = 'Absenden';
+  });
 });
+
+// Konfetti Effekt Funktion
+function launchConfetti() {
+  const duration = 2 * 1000;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 }
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 }
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  }());
+}
 </script>
+
+<!-- Konfetti-Bibliothek einbinden -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 
 </body>
 </html>
-
